@@ -169,3 +169,71 @@ async def admin_orders(limit: int = 50):
     for d in docs:
         d["_id"] = str(d["_id"])  # cast id
     return docs
+
+
+# Admin: Seed menu with curated items for THE HooK (Kerala non-veg + salads)
+@app.post("/admin/seed_menu")
+async def seed_menu() -> Dict[str, Any]:
+    defaults: List[Dict[str, Any]] = [
+        {
+            "name": "Chicken Fry",
+            "category": "Chicken",
+            "description": "Crispy, juicy chicken fry with house spice blend.",
+            "price": 239,
+            "image_url": "https://images.unsplash.com/photo-1606756790138-261b8f2c1e46?q=80&w=1200&auto=format&fit=crop",
+            "veg": False,
+        },
+        {
+            "name": "Kerala Style Chicken Roast",
+            "category": "Chicken",
+            "description": "Slow-roasted chicken with coconut oil, curry leaves, and black pepper.",
+            "price": 289,
+            "image_url": "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop",
+            "veg": False,
+        },
+        {
+            "name": "Kerala Fish Curry",
+            "category": "Fish",
+            "description": "Tangy red curry with kokum and coconut, homestyle.",
+            "price": 299,
+            "image_url": "https://images.unsplash.com/photo-1601050690597-9d5a27f0b046?q=80&w=1200&auto=format&fit=crop",
+            "veg": False,
+        },
+        {
+            "name": "Crispy Fish Fry",
+            "category": "Fish",
+            "description": "Marinated seer fish fried to perfection with curry leaves.",
+            "price": 319,
+            "image_url": "https://images.unsplash.com/photo-1625946634638-98a84d888fff?q=80&w=1200&auto=format&fit=crop",
+            "veg": False,
+        },
+        {
+            "name": "Green Power Salad",
+            "category": "Salads",
+            "description": "Leafy greens, cucumber, herbs, lemon-olive dressing.",
+            "price": 179,
+            "image_url": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=1200&auto=format&fit=crop",
+            "veg": True,
+        },
+        {
+            "name": "Quinoa Chickpea Salad",
+            "category": "Salads",
+            "description": "High-protein quinoa, chickpeas, peppers, mint yogurt.",
+            "price": 199,
+            "image_url": "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=1200&auto=format&fit=crop",
+            "veg": True,
+        },
+    ]
+
+    created = []
+    skipped = []
+    for item in defaults:
+        existing = await db["menuitem"].find_one({"name": item["name"]})
+        if existing:
+            skipped.append(item["name"])
+            continue
+        doc = await create_document("menuitem", item)
+        doc["_id"] = str(doc["_id"])  # cast id
+        created.append(doc)
+
+    return {"created": created, "skipped": skipped}
